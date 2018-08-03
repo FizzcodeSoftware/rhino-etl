@@ -85,6 +85,7 @@
     <Compile Include="Enumerables\ThreadSafeEnumerator.cs" />
     <Compile Include="Guard.cs" />
     <Compile Include="Infrastructure\SqlCommandSet.cs" />
+    <Compile Include="Infrastructure\SqlCommandWithRow.cs" />
     <Compile Include="Infrastructure\Use.cs" />
     <Compile Include="Operations\AbstractBranchingOperation.cs" />
     <Compile Include="Operations\AbstractJoinOperation.cs" />
