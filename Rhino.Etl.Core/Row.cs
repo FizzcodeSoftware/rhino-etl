@@ -49,7 +49,6 @@ namespace Rhino.Etl.Core
         {
         }
 
-
         /// <summary>
         /// Creates a copy of the given source, erasing whatever is in the row currently.
         /// </summary>

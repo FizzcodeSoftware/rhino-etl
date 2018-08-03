@@ -34,6 +34,8 @@ using System.Reflection;
 
 namespace Rhino.Etl.Core.Infrastructure
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// Expose the batch functionality in ADO.Net 2.0
     /// Microsoft in its wisdom decided to make my life hard and mark it internal.
@@ -58,6 +60,11 @@ namespace Rhino.Etl.Core.Infrastructure
         private readonly DisposeCommand doDispose;
         private int countOfCommands = 0;
 
+        /// <summary>
+        /// The Command and the Row.
+        /// </summary>
+        protected List<SqlCommandWithRow> CommandWithRows { get; } = new List<SqlCommandWithRow>();
+
         static SqlCommandSet()
         {
             Assembly sysData = Assembly.Load("System.Data, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
@@ -70,6 +77,7 @@ namespace Rhino.Etl.Core.Infrastructure
         /// </summary>
         public SqlCommandSet()
         {
+            CommandWithRows = new List<SqlCommandWithRow>();
 
             instance = Activator.CreateInstance(sqlCmdSetType, true);
 
@@ -92,16 +100,17 @@ namespace Rhino.Etl.Core.Infrastructure
                                 Delegate.CreateDelegate(typeof(ExecuteNonQueryCommand),
                                                         instance, "ExecuteNonQuery");
             doDispose = (DisposeCommand)Delegate.CreateDelegate(typeof(DisposeCommand), instance, "Dispose");
-
         }
 
         /// <summary>
-        /// Append a command to the batch
+        /// Append a command to the batch.
         /// </summary>
-        /// <param name="command"></param>
-        public void Append(SqlCommand command)
+        /// <param name="command">The Command.</param>
+        /// /// <param name="row">Te Row.</param>
+        public void Append(SqlCommand command, Row row)
         {
             AssertHasParameters(command);
+            CommandWithRows.Add(new SqlCommandWithRow(command, row));
             doAppend(command);
             countOfCommands++;
         }

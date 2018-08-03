@@ -76,16 +76,16 @@ namespace Rhino.Etl.Core.Operations
                         Guid guid = Guid.NewGuid();
                         command.Parameters.AddWithValue(guid.ToString(), guid);
                     }
-                    commandSet.Append(command);
+                    commandSet.Append(command, row);
                     if (commandSet.CountOfCommands >= batchSize)
                     {
                         Debug("Executing batch of {0} commands", commandSet.CountOfCommands);
-                        commandSet.ExecuteNonQuery();
+                        Execute(commandSet);
                         CreateCommandSet(connection, transaction, ref commandSet, timeout);
                     }
                 }
                 Debug("Executing final batch of {0} commands", commandSet.CountOfCommands);
-                commandSet.ExecuteNonQuery();
+                Execute(commandSet);
 
                 if (PipelineExecuter.HasErrors)
                 {
@@ -99,9 +99,48 @@ namespace Rhino.Etl.Core.Operations
                     if (transaction != null) transaction.Commit();
                     Debug("Committed {0}", Name);
                 }                    
-
             }
             yield break;
+        }
+
+        /// <summary>
+        /// Executes the SqlCommandSet, calls OnErrorExecute on Exception.
+        /// </summary>
+        /// <param name="commandSet">The SqlCommandSet to execute.</param>
+        protected virtual void Execute(SqlCommandSet commandSet)
+        {
+            try
+            {
+                commandSet.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                if (OnErrorExecute(commandSet, e))
+                {
+                    commandSet.ExecuteNonQuery();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Execute calls this method on Exception. Use to handle the error or fix the issue, and let Execute retry.
+        /// </summary>
+        /// <param name="commandSet">
+        /// The command set.
+        /// </param>
+        /// <param name="e">
+        /// The Exception.
+        /// </param>
+        /// <returns>
+        /// True, if Execute should retry.
+        /// </returns>
+        protected virtual bool OnErrorExecute(SqlCommandSet commandSet, Exception e)
+        {
+            return false;
         }
 
         /// <summary>
