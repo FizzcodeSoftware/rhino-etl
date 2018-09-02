@@ -35,6 +35,7 @@ using System.Reflection;
 namespace Rhino.Etl.Core.Infrastructure
 {
     using System.Collections.Generic;
+    using System.Text;
 
     /// <summary>
     /// Expose the batch functionality in ADO.Net 2.0
@@ -196,6 +197,44 @@ namespace Rhino.Etl.Core.Infrastructure
         public void Dispose()
         {
             doDispose();
+        }
+
+        /// <summary>
+        /// Returns the content of the Rows.
+        /// </summary>
+        /// <returns></returns>
+        public string DumpRows()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach (SqlCommandWithRow sqlCommandWithRow in CommandWithRows)
+            {
+                Row row = sqlCommandWithRow.Row;
+                foreach (string columnName in row.Columns)
+                {
+                    try
+                    {
+                        sb.Append("\"");
+                        sb.Append(columnName);
+                        sb.Append("\": ");
+
+                        string value;
+                        if (row[columnName] == null)
+                            value = string.Empty;
+                        else
+                            value = row[columnName].ToString();
+
+                        sb.AppendLine(value);
+                    }
+                    catch (Exception e)
+                    {
+                        string dummy = e.Message;
+                    }
+
+                }
+            }
+
+            return sb.ToString();
         }
 
         #region Delegate Definations

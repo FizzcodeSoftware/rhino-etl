@@ -121,8 +121,10 @@ namespace Rhino.Etl.Core.Operations
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine(commandSet.DumpRows());
+
                     // To Preserve this StackTrace in InnerException
-                    throw new Exception(this.ToString() + ". " + e.Message, e);
+                    throw new Exception(this + ". " + e.Message, e);
                 }
             }
         }
